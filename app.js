@@ -175,6 +175,7 @@ const renderDetail = (artifact) => {
   const audioPlayer = detailScreen.querySelector(".detail-audio");
   if (audioPlayer) {
     const audioStatus = detailScreen.querySelector(".voice-copy span");
+    let playbackStarted = false;
     const showAudioError = (error) => {
       if (error.name === "NotAllowedError") {
         audioStatus.textContent = "瀏覽器封鎖自動播放，請點擊播放器播放";
@@ -185,7 +186,13 @@ const renderDetail = (artifact) => {
     };
 
     audioPlayer.addEventListener("playing", () => {
+      playbackStarted = true;
       audioStatus.textContent = "正在播放語音導覽";
+    });
+    audioPlayer.addEventListener("pause", () => {
+      if (playbackStarted && !audioPlayer.ended) {
+        audioStatus.textContent = "已暫停 · 點擊播放器繼續";
+      }
     });
     audioPlayer.addEventListener("ended", () => {
       audioStatus.textContent = "語音導覽已播放完畢";
