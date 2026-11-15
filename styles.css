@@ -180,6 +180,9 @@ button { color: inherit; }
 .voice-file-panel { flex-wrap: wrap; }
 .voice-file-panel .voice-copy { flex-basis: 110px; }
 .detail-audio { width: min(100%, 260px); height: 38px; }
+.voice-retry-button { flex: 1 1 100%; border: 1px solid #c9cbbd; padding: 10px 12px; background: var(--olive-dark); color: #fff; font-size: 10px; cursor: pointer; }
+.voice-retry-button:hover { background: #596548; }
+.voice-retry-button:disabled { cursor: progress; opacity: .65; }
 .story-heading { display: flex; align-items: end; justify-content: space-between; margin: 0 0 14px; }
 .story-heading h2 { margin: 0; font: 500 18px var(--serif); letter-spacing: .06em; }
 .story-heading span { color: #8e8b7f; font-size: 9px; letter-spacing: .08em; }

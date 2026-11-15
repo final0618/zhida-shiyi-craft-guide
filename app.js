@@ -124,6 +124,7 @@ const renderDetail = (artifact) => {
             <source src="${escapeHTML(artifact.audio)}" type="audio/wav">
             此瀏覽器不支援音訊播放。
           </audio>
+          <button class="voice-retry-button" type="button" hidden>點擊播放語音介紹</button>
         </div>
         ` : `<div class="voice-panel">
           <button class="voice-button" type="button" aria-label="播放語音導覽" data-state="idle">
@@ -175,8 +176,12 @@ const renderDetail = (artifact) => {
   const audioPlayer = detailScreen.querySelector(".detail-audio");
   if (audioPlayer) {
     const audioStatus = detailScreen.querySelector(".voice-copy span");
+    const retryButton = detailScreen.querySelector(".voice-retry-button");
     let playbackStarted = false;
+    let playbackFailed = false;
     const showAudioError = (error) => {
+      playbackFailed = true;
+      retryButton.hidden = false;
       if (error.name === "NotAllowedError") {
         audioStatus.textContent = "瀏覽器封鎖自動播放，請點擊播放器播放";
         return;
@@ -187,10 +192,12 @@ const renderDetail = (artifact) => {
 
     audioPlayer.addEventListener("playing", () => {
       playbackStarted = true;
+      playbackFailed = false;
+      retryButton.hidden = true;
       audioStatus.textContent = "正在播放語音導覽";
     });
     audioPlayer.addEventListener("pause", () => {
-      if (playbackStarted && !audioPlayer.ended) {
+      if (playbackStarted && !playbackFailed && !audioPlayer.ended) {
         audioStatus.textContent = "已暫停 · 點擊播放器繼續";
       }
     });
@@ -199,6 +206,17 @@ const renderDetail = (artifact) => {
     });
     audioPlayer.addEventListener("error", () => {
       showAudioError(audioPlayer.error || new Error("音訊檔載入失敗"));
+    });
+    retryButton.addEventListener("click", async () => {
+      retryButton.disabled = true;
+      try {
+        await audioPlayer.play();
+        retryButton.hidden = true;
+      } catch (error) {
+        showAudioError(error);
+      } finally {
+        retryButton.disabled = false;
+      }
     });
     try {
       const playback = audioPlayer.play();
@@ -212,6 +230,7 @@ const renderDetail = (artifact) => {
   if (voiceButton) {
     const stopButton = detailScreen.querySelector(".voice-stop-button");
     const voiceStatus = detailScreen.querySelector(".voice-copy span");
+    let autoplayAttemptPending = false;
     const resetVoiceControls = () => {
       voiceButton.dataset.state = "idle";
       voiceButton.setAttribute("aria-label", "播放語音導覽");
@@ -220,6 +239,13 @@ const renderDetail = (artifact) => {
     };
 
     voiceButton.addEventListener("click", () => {
+      const restartingAutoplay = autoplayAttemptPending;
+      if (restartingAutoplay) {
+        window.speechSynthesis.cancel();
+        activeUtterance = null;
+        autoplayAttemptPending = false;
+      }
+
       const button = voiceButton;
       if (!("speechSynthesis" in window) || !("SpeechSynthesisUtterance" in window)) {
         button.disabled = true;
@@ -228,7 +254,7 @@ const renderDetail = (artifact) => {
         return;
       }
 
-      if (window.speechSynthesis.paused) {
+      if (!restartingAutoplay && window.speechSynthesis.paused) {
         window.speechSynthesis.resume();
         button.dataset.state = "playing";
         button.setAttribute("aria-label", "暫停語音導覽");
@@ -236,7 +262,7 @@ const renderDetail = (artifact) => {
         return;
       }
 
-      if (window.speechSynthesis.speaking || window.speechSynthesis.pending) {
+      if (!restartingAutoplay && (window.speechSynthesis.speaking || window.speechSynthesis.pending)) {
         window.speechSynthesis.pause();
         button.dataset.state = "paused";
         button.setAttribute("aria-label", "繼續語音導覽");
@@ -245,31 +271,53 @@ const renderDetail = (artifact) => {
       }
 
       activeUtterance = new SpeechSynthesisUtterance(artifact.voiceText);
+      const utterance = activeUtterance;
+      autoplayAttemptPending = true;
       activeUtterance.lang = "zh-TW";
       activeUtterance.rate = 0.9;
+      activeUtterance.onstart = () => {
+        if (activeUtterance !== utterance) return;
+        autoplayAttemptPending = false;
+        button.dataset.state = "playing";
+        button.setAttribute("aria-label", "暫停語音導覽");
+        stopButton.disabled = false;
+        voiceStatus.textContent = "正在播放 · 點擊暫停";
+      };
       activeUtterance.onend = () => {
         if (activeUtterance !== utterance) return;
+        autoplayAttemptPending = false;
         activeUtterance = null;
         resetVoiceControls();
       };
       activeUtterance.onerror = (error) => {
         if (activeUtterance !== utterance) return;
+        autoplayAttemptPending = false;
         activeUtterance = null;
         resetVoiceControls();
-        voiceStatus.textContent = "自動播放未成功，請點擊播放重試";
+        voiceStatus.textContent = error.error === "not-allowed"
+          ? "瀏覽器封鎖自動播放，請點擊播放按鈕"
+          : "自動播放未成功，請點擊播放按鈕重試";
         console.error("語音導覽播放失敗", error);
       };
-      const utterance = activeUtterance;
-      window.speechSynthesis.speak(utterance);
-      button.dataset.state = "playing";
-      button.setAttribute("aria-label", "暫停語音導覽");
-      stopButton.disabled = false;
-      voiceStatus.textContent = "正在播放 · 點擊暫停";
+      button.dataset.state = "idle";
+      button.setAttribute("aria-label", "播放語音導覽");
+      stopButton.disabled = true;
+      voiceStatus.textContent = "若未聽到語音，請點擊播放按鈕";
+      try {
+        window.speechSynthesis.speak(utterance);
+      } catch (error) {
+        autoplayAttemptPending = false;
+        activeUtterance = null;
+        resetVoiceControls();
+        voiceStatus.textContent = "自動播放未成功，請點擊播放按鈕重試";
+        console.error("語音導覽無法啟動", error);
+      }
     });
 
     voiceButton.click();
 
     stopButton.addEventListener("click", () => {
+      autoplayAttemptPending = false;
       stopNarration();
       resetVoiceControls();
     });
