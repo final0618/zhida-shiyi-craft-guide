@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 680" fill="none">
+  <defs>
+    <linearGradient id="bg" x1="93" y1="39" x2="682" y2="635" gradientUnits="userSpaceOnUse"><stop stop-color="#E4E2D2"/><stop offset="1" stop-color="#B7B79E"/></linearGradient>
+    <linearGradient id="mat" x1="177" y1="128" x2="605" y2="558" gradientUnits="userSpaceOnUse"><stop stop-color="#D6C596"/><stop offset=".5" stop-color="#B9AA7B"/><stop offset="1" stop-color="#928B67"/></linearGradient>
+    <pattern id="weave" width="34" height="34" patternUnits="userSpaceOnUse"><path d="M0 8h34M0 25h34" stroke="#F0E7C9" stroke-opacity=".6" stroke-width="8"/><path d="M8 0v34M25 0v34" stroke="#777A58" stroke-opacity=".42" stroke-width="8"/><path d="M0 16h34" stroke="#927B56" stroke-opacity=".28" stroke-width="2"/></pattern>
+    <filter id="shadow" x="93" y="80" width="572" height="581" color-interpolation-filters="sRGB" filterUnits="userSpaceOnUse"><feGaussianBlur stdDeviation="19"/></filter>
+  </defs>
+  <path fill="url(#bg)" d="M0 0h760v680H0z"/>
+  <path d="M0 0h760v680H0z" fill="#EDE9D8" fill-opacity=".15"/>
+  <circle cx="591" cy="118" r="80" fill="#F2DDB0" fill-opacity=".52"/>
+  <path d="m139 549 83-405c4-18 20-30 39-28l279 57c20 4 32 22 28 42l-81 388c-4 19-23 31-42 26l-278-62c-19-4-32-20-28-38Z" fill="#514B3C" fill-opacity=".35" filter="url(#shadow)"/>
+  <path d="m126 531 83-405c4-18 20-30 39-28l279 57c20 4 32 22 28 42l-81 388c-4 19-23 31-42 26l-278-62c-19-4-32-20-28-38Z" fill="url(#mat)"/>
+  <path d="m126 531 83-405c4-18 20-30 39-28l279 57c20 4 32 22 28 42l-81 388c-4 19-23 31-42 26l-278-62c-19-4-32-20-28-38Z" fill="url(#weave)"/>
+  <path d="m144 511 79-385M209 533l83-405M276 548l83-407M343 563l83-407M410 578l83-407M477 588l81-397" stroke="#F2E7C6" stroke-opacity=".4" stroke-width="4"/>
+  <path d="m126 531 83-405c4-18 20-30 39-28l279 57c20 4 32 22 28 42l-81 388c-4 19-23 31-42 26l-278-62c-19-4-32-20-28-38Z" stroke="#72694E" stroke-opacity=".55" stroke-width="5"/>
+  <path d="m172 541-5 25m43-13-5 25m44-16-5 25m44-15-5 25m44-15-5 25m44-15-5 25m44-15-5 25m44-16-5 25m44-15-5 25" stroke="#B8AA7C" stroke-width="8" stroke-linecap="round"/>
+  <path d="M79 560c61 45 131 68 208 74" stroke="#F8F3DE" stroke-opacity=".52" stroke-width="2"/>
+</svg>
