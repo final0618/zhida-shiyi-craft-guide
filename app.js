@@ -116,7 +116,6 @@ const renderDetail = (artifact) => {
         <p class="eyebrow"><span class="eyebrow-line"></span> ${escapeHTML(artifact.category)} / ${escapeHTML(artifact.maker)}</p>
         <h1>${escapeHTML(artifact.title)}</h1>
         <p class="detail-subtitle">${escapeHTML(artifact.subtitle)}</p>
-        <p class="detail-intro">${escapeHTML(artifact.description)}</p>
         ${artifact.audio ? `
         <div class="voice-panel voice-file-panel">
           <div class="voice-copy"><strong>聽一段作品故事</strong><span>頁面開啟時會嘗試自動播放</span></div>
@@ -124,12 +123,17 @@ const renderDetail = (artifact) => {
             <source src="${escapeHTML(artifact.audio)}" type="audio/wav">
             此瀏覽器不支援音訊播放。
           </audio>
-          <button class="voice-retry-button" type="button" hidden>點擊播放語音介紹</button>
+          <button class="voice-audio-button" type="button" aria-label="播放語音介紹" data-state="idle">
+            <svg class="icon-play" viewBox="0 0 20 20" aria-hidden="true"><path d="M6 3.8c0-.8.9-1.3 1.6-.8l8.1 5.5c.6.4.6 1.4 0 1.8l-8.1 5.5c-.7.5-1.6 0-1.6-.8V3.8Z"/></svg>
+            <svg class="icon-pause" viewBox="0 0 20 20" aria-hidden="true"><path d="M5 4h3.5v12H5zM11.5 4H15v12h-3.5z"/></svg>
+            <span>播放語音介紹</span>
+          </button>
         </div>
         ` : `<div class="voice-panel">
           <button class="voice-button" type="button" aria-label="播放語音導覽" data-state="idle">
             <svg class="icon-play" viewBox="0 0 20 20" aria-hidden="true"><path d="M6 3.8c0-.8.9-1.3 1.6-.8l8.1 5.5c.6.4.6 1.4 0 1.8l-8.1 5.5c-.7.5-1.6 0-1.6-.8V3.8Z"/></svg>
             <svg class="icon-pause" viewBox="0 0 20 20" aria-hidden="true"><path d="M5 4h3.5v12H5zM11.5 4H15v12h-3.5z"/></svg>
+            <span class="voice-button-label">播放語音介紹</span>
           </button>
           <button class="voice-stop-button" type="button" aria-label="停止語音導覽" disabled>
             <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M5 5h10v10H5z"/></svg>
@@ -137,6 +141,7 @@ const renderDetail = (artifact) => {
           <div class="voice-copy"><strong>聽一段作品故事</strong><span>頁面開啟時會嘗試自動播放</span></div>
           <span class="voice-duration">約 1 分鐘</span>
         </div>`}
+        <p class="detail-intro">${escapeHTML(artifact.description)}</p>
         <div class="story-heading"><h2>走近作品</h2><span>點選細節，慢慢探索</span></div>
         <div class="step-tabs" role="tablist" aria-label="作品介紹步驟">${steps}</div>
         <div class="step-panel" id="step-panel" role="tabpanel" aria-labelledby="step-tab-0"></div>
@@ -176,46 +181,62 @@ const renderDetail = (artifact) => {
   const audioPlayer = detailScreen.querySelector(".detail-audio");
   if (audioPlayer) {
     const audioStatus = detailScreen.querySelector(".voice-copy span");
-    const retryButton = detailScreen.querySelector(".voice-retry-button");
+    const audioButton = detailScreen.querySelector(".voice-audio-button");
     let playbackStarted = false;
     let playbackFailed = false;
     const showAudioError = (error) => {
       playbackFailed = true;
-      retryButton.hidden = false;
+      audioButton.dataset.state = "idle";
+      audioButton.setAttribute("aria-label", "播放語音介紹");
+      audioButton.querySelector("span").textContent = error.name === "NotAllowedError"
+        ? "點擊播放語音介紹"
+        : "重新播放語音介紹";
       if (error.name === "NotAllowedError") {
-        audioStatus.textContent = "瀏覽器封鎖自動播放，請點擊播放器播放";
+        audioStatus.textContent = "瀏覽器封鎖自動播放，請點擊下方按鈕";
         return;
       }
-      audioStatus.textContent = "音訊播放失敗，請點擊播放器重試";
+      audioStatus.textContent = "音訊播放失敗，請點擊下方按鈕重試";
       console.error("語音檔播放失敗", error);
     };
 
     audioPlayer.addEventListener("playing", () => {
       playbackStarted = true;
       playbackFailed = false;
-      retryButton.hidden = true;
+      audioButton.dataset.state = "playing";
+      audioButton.setAttribute("aria-label", "暫停語音導覽");
+      audioButton.querySelector("span").textContent = "暫停語音介紹";
       audioStatus.textContent = "正在播放語音導覽";
     });
     audioPlayer.addEventListener("pause", () => {
       if (playbackStarted && !playbackFailed && !audioPlayer.ended) {
-        audioStatus.textContent = "已暫停 · 點擊播放器繼續";
+        audioButton.dataset.state = "idle";
+        audioButton.setAttribute("aria-label", "繼續語音導覽");
+        audioButton.querySelector("span").textContent = "繼續播放語音介紹";
+        audioStatus.textContent = "已暫停 · 點擊播放按鈕繼續";
       }
     });
     audioPlayer.addEventListener("ended", () => {
+      audioButton.dataset.state = "idle";
+      audioButton.setAttribute("aria-label", "重新播放語音導覽");
+      audioButton.querySelector("span").textContent = "重新播放語音介紹";
       audioStatus.textContent = "語音導覽已播放完畢";
     });
     audioPlayer.addEventListener("error", () => {
       showAudioError(audioPlayer.error || new Error("音訊檔載入失敗"));
     });
-    retryButton.addEventListener("click", async () => {
-      retryButton.disabled = true;
+    audioButton.addEventListener("click", async () => {
+      if (!audioPlayer.paused && !audioPlayer.ended) {
+        audioPlayer.pause();
+        return;
+      }
+
+      audioButton.disabled = true;
       try {
         await audioPlayer.play();
-        retryButton.hidden = true;
       } catch (error) {
         showAudioError(error);
       } finally {
-        retryButton.disabled = false;
+        audioButton.disabled = false;
       }
     });
     try {
@@ -231,9 +252,13 @@ const renderDetail = (artifact) => {
     const stopButton = detailScreen.querySelector(".voice-stop-button");
     const voiceStatus = detailScreen.querySelector(".voice-copy span");
     let autoplayAttemptPending = false;
+    const setVoiceButton = (state, label, ariaLabel) => {
+      voiceButton.dataset.state = state;
+      voiceButton.setAttribute("aria-label", ariaLabel);
+      voiceButton.querySelector(".voice-button-label").textContent = label;
+    };
     const resetVoiceControls = () => {
-      voiceButton.dataset.state = "idle";
-      voiceButton.setAttribute("aria-label", "播放語音導覽");
+      setVoiceButton("idle", "播放語音介紹", "播放語音導覽");
       stopButton.disabled = true;
       voiceStatus.textContent = "語音導覽 · 繁體中文";
     };
@@ -256,16 +281,14 @@ const renderDetail = (artifact) => {
 
       if (!restartingAutoplay && window.speechSynthesis.paused) {
         window.speechSynthesis.resume();
-        button.dataset.state = "playing";
-        button.setAttribute("aria-label", "暫停語音導覽");
+        setVoiceButton("playing", "暫停語音介紹", "暫停語音導覽");
         voiceStatus.textContent = "正在播放 · 點擊暫停";
         return;
       }
 
       if (!restartingAutoplay && (window.speechSynthesis.speaking || window.speechSynthesis.pending)) {
         window.speechSynthesis.pause();
-        button.dataset.state = "paused";
-        button.setAttribute("aria-label", "繼續語音導覽");
+        setVoiceButton("paused", "繼續播放語音介紹", "繼續語音導覽");
         voiceStatus.textContent = "已暫停 · 點擊繼續";
         return;
       }
@@ -278,8 +301,7 @@ const renderDetail = (artifact) => {
       activeUtterance.onstart = () => {
         if (activeUtterance !== utterance) return;
         autoplayAttemptPending = false;
-        button.dataset.state = "playing";
-        button.setAttribute("aria-label", "暫停語音導覽");
+        setVoiceButton("playing", "暫停語音介紹", "暫停語音導覽");
         stopButton.disabled = false;
         voiceStatus.textContent = "正在播放 · 點擊暫停";
       };
@@ -299,8 +321,7 @@ const renderDetail = (artifact) => {
           : "自動播放未成功，請點擊播放按鈕重試";
         console.error("語音導覽播放失敗", error);
       };
-      button.dataset.state = "idle";
-      button.setAttribute("aria-label", "播放語音導覽");
+      setVoiceButton("idle", "播放語音介紹", "播放語音導覽");
       stopButton.disabled = true;
       voiceStatus.textContent = "若未聽到語音，請點擊播放按鈕";
       try {
