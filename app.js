@@ -609,7 +609,11 @@ teacherGrid.addEventListener("click", (event) => {
 
 window.addEventListener("popstate", renderRoute);
 
-Promise.all([fetch("./data/artifacts.json"), fetch("./data/teachers.json")])
+const dataCacheKey = Date.now();
+Promise.all([
+  fetch(`./data/artifacts.json?v=${dataCacheKey}`, { cache: "no-store" }),
+  fetch(`./data/teachers.json?v=${dataCacheKey}`, { cache: "no-store" }),
+])
   .then(async ([artifactResponse, teacherResponse]) => {
     if (!artifactResponse.ok) throw new Error(`無法載入作品資料：HTTP ${artifactResponse.status}`);
     if (!teacherResponse.ok) throw new Error(`無法載入工藝老師資料：HTTP ${teacherResponse.status}`);

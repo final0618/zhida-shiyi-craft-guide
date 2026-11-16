@@ -611,6 +611,41 @@ const handleUpdateArtifact = async (request, env, artifactId) => {
   });
 };
 
+const handleUpdateTeacher = async (request, env, teacherId) => {
+  const { teacher, photo } = await readTeacherForm(request);
+  if (teacher.id !== teacherId) throw new ApiError(400, "編輯時不可變更老師網址代碼。");
+  const teachers = await readTeachers(env);
+  const index = teachers.findIndex((item) => item.id === teacherId);
+  if (index < 0) throw new ApiError(404, "找不到這位工藝老師。");
+
+  const previous = teachers[index];
+  teacher.number = previous.number || index + 1;
+  if (previous.image) teacher.image = previous.image;
+  const image = photo && typeof photo.arrayBuffer === "function" && photo.size > 0
+    ? await readPhoto(photo, "工藝老師")
+    : null;
+  if (image && !teacher.imageAlt) throw new ApiError(400, "請填寫老師照片替代文字。");
+  if (image) teacher.image = `./assets/uploads/teachers/${teacher.id}-${crypto.randomUUID()}.${image.extension}`;
+  delete teacher.audio;
+
+  teachers[index] = teacher;
+  const files = [
+    ...(image ? [{
+      path: teacher.image.slice(2),
+      bytes: image.bytes,
+    }] : []),
+    {
+      path: "data/teachers.json",
+      bytes: textEncoder.encode(`${JSON.stringify(teachers, null, 2)}\n`),
+    },
+  ];
+  await commitFiles(files, `Update craft teacher ${teacherId}`, env);
+  return jsonResponse(200, {
+    teacher,
+    message: "工藝老師已儲存至 GitHub，公開導覽網站正在更新。",
+  });
+};
+
 const routeRequest = async (request, env) => {
   const { pathname } = new URL(request.url);
   const method = request.method.toUpperCase();
@@ -679,6 +714,12 @@ const routeRequest = async (request, env) => {
   if (artifactMatch && method === "PUT") {
     await requireAdmin(request, env);
     return handleUpdateArtifact(request, env, artifactMatch[1]);
+  }
+
+  const teacherMatch = pathname.match(/^\/api\/teachers\/([a-z0-9]+(?:-[a-z0-9]+)*)$/);
+  if (teacherMatch && method === "PUT") {
+    await requireAdmin(request, env);
+    return handleUpdateTeacher(request, env, teacherMatch[1]);
   }
 
   return errorResponse(404, "找不到這個管理 API。");

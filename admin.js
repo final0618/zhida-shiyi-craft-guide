@@ -27,6 +27,9 @@ const teacherDescriptionInput = document.querySelector("#teacher-description");
 const teacherVoiceInput = document.querySelector("#teacher-voice-text");
 const teacherPhotoInput = document.querySelector("#teacher-photo");
 const teacherPhotoPreview = document.querySelector("#teacher-photo-preview");
+const teacherPhotoLabel = document.querySelector("#teacher-photo-label");
+const teacherPhotoHelp = document.querySelector("#teacher-photo-help");
+const teacherFormHeading = document.querySelector("#teacher-form-heading");
 const teacherFormMessage = document.querySelector("#teacher-form-message");
 const teacherSubmitButton = document.querySelector("#teacher-submit-button");
 const apiConfig = document.querySelector('meta[name="craft-admin-api"]');
@@ -47,6 +50,8 @@ let artifacts = [];
 let teachers = [];
 let adminToken = null;
 let teacherPhotoPreviewUrl = null;
+let teacherExistingImage = null;
+let editingTeacherId = null;
 let teacherVoiceTextWasEdited = false;
 let teacherIdWasEdited = false;
 let lastSuccessKind = "artifact";
@@ -291,6 +296,7 @@ const renderTeachers = () => {
         <div><strong>${escapeHTML(teacher.name)}</strong><span>${escapeHTML(teacher.specialty)}</span></div>
       </div>
       <div class="admin-artifact-actions">
+        <button class="admin-artifact-button" type="button" data-teacher-action="edit" data-id="${escapeHTML(teacher.id)}" aria-label="編輯 ${escapeHTML(teacher.name)}">編輯</button>
         <button class="admin-artifact-button" type="button" data-teacher-action="qrcode" data-id="${escapeHTML(teacher.id)}" aria-label="為 ${escapeHTML(teacher.name)} 產生 QR Code">產生 QR Code</button>
       </div>
     </article>
@@ -342,11 +348,53 @@ const clearTeacherPhotoPreview = () => {
 
 const resetTeacherForm = () => {
   teacherForm.reset();
+  editingTeacherId = null;
+  teacherExistingImage = null;
   teacherVoiceTextWasEdited = false;
   teacherIdWasEdited = false;
+  teacherIdInput.readOnly = false;
   clearTeacherPhotoPreview();
-  teacherFormMessage.hidden = true;
+  teacherPhotoLabel.textContent = "老師照片";
+  teacherPhotoHelp.textContent = "選填；支援 JPG、PNG、WebP，檔案需小於 10 MB。";
+  teacherFormHeading.textContent = "新增工藝老師";
+  document.querySelector("#teacher-edit-mode-notice").hidden = true;
   document.querySelector("#teacher-submit-label").textContent = "建立老師";
+  document.querySelector("#teacher-submit-description").textContent = isRemoteAdmin
+    ? "送出後會將老師資料與照片儲存至 GitHub，並產生可下載的 QR Code。"
+    : "送出後會新增老師資料、上傳照片、產生語音檔及專屬 QR Code。";
+  teacherFormMessage.classList.remove("error");
+  teacherFormMessage.hidden = true;
+};
+
+const startEditingTeacher = (teacher) => {
+  resetTeacherForm();
+  editingTeacherId = teacher.id;
+  teacherIdInput.value = teacher.id;
+  teacherIdInput.readOnly = true;
+  teacherNameInput.value = teacher.name || "";
+  teacherForm.elements.specialty.value = teacher.specialty || "";
+  teacherDescriptionInput.value = teacher.description || "";
+  teacherForm.elements.imageAlt.value = teacher.imageAlt || "";
+  teacherVoiceInput.value = teacher.voiceText || "";
+  teacherVoiceTextWasEdited = true;
+  teacherExistingImage = teacher.image || null;
+  if (teacherExistingImage) {
+    teacherPhotoPreview.src = teacherExistingImage;
+    teacherPhotoPreview.hidden = false;
+  }
+  teacherPhotoLabel.textContent = "老師照片（選填）";
+  teacherPhotoHelp.textContent = "支援 JPG、PNG、WebP，檔案需小於 10 MB；留空會保留原照片。";
+  teacherFormHeading.textContent = "編輯工藝老師";
+  document.querySelector("#teacher-edit-mode-name").textContent = teacher.name;
+  document.querySelector("#teacher-edit-mode-notice").hidden = false;
+  document.querySelector("#teacher-submit-label").textContent = "儲存修改";
+  document.querySelector("#teacher-submit-description").textContent = isRemoteAdmin
+    ? "儲存後會更新公開老師介紹；網址代碼與 QR Code 維持不變。"
+    : "儲存後會更新老師介紹；語音稿變更時會重新產生 WAV。";
+  teacherFormMessage.classList.remove("error");
+  teacherFormMessage.hidden = true;
+  successPanel.hidden = true;
+  teacherForm.scrollIntoView({ behavior: "smooth", block: "start" });
 };
 
 const resetEditor = () => {
@@ -445,6 +493,9 @@ document.querySelector("#cancel-edit").addEventListener("click", () => {
   resetEditor();
   formMessage.hidden = true;
 });
+document.querySelector("#cancel-teacher-edit").addEventListener("click", () => {
+  resetTeacherForm();
+});
 artifactList.addEventListener("click", async (event) => {
   const button = event.target.closest("[data-action]");
   if (!button || button.disabled) return;
@@ -477,13 +528,18 @@ artifactList.addEventListener("click", async (event) => {
 });
 
 teacherList.addEventListener("click", async (event) => {
-  const button = event.target.closest("[data-teacher-action='qrcode']");
+  const button = event.target.closest("[data-teacher-action]");
   if (!button || button.disabled) return;
   const teacher = teachers.find((item) => item.id === button.dataset.id);
   if (!teacher) {
     await loadTeachers();
     return;
   }
+  if (button.dataset.teacherAction === "edit") {
+    startEditingTeacher(teacher);
+    return;
+  }
+  if (button.dataset.teacherAction !== "qrcode") return;
 
   successPanel.hidden = true;
   teacherFormMessage.hidden = true;
@@ -541,8 +597,9 @@ teacherPhotoInput.addEventListener("change", () => {
   teacherPhotoPreviewUrl = null;
   const file = teacherPhotoInput.files[0];
   if (!file) {
-    teacherPhotoPreview.hidden = true;
-    teacherPhotoPreview.removeAttribute("src");
+    teacherPhotoPreview.hidden = !teacherExistingImage;
+    if (teacherExistingImage) teacherPhotoPreview.src = teacherExistingImage;
+    else teacherPhotoPreview.removeAttribute("src");
     return;
   }
   teacherPhotoPreviewUrl = URL.createObjectURL(file);
@@ -556,7 +613,14 @@ teacherForm.addEventListener("submit", async (event) => {
   successPanel.hidden = true;
   if (!teacherForm.reportValidity()) return;
 
+  const isEditing = editingTeacherId !== null;
   const photo = teacherPhotoInput.files[0];
+  if (photo && !teacherForm.elements.imageAlt.value.trim()) {
+    teacherFormMessage.textContent = "上傳老師照片時請填寫照片替代文字。";
+    teacherFormMessage.classList.add("error");
+    teacherFormMessage.hidden = false;
+    return;
+  }
   if (photo && photo.size > 10 * 1024 * 1024) {
     teacherFormMessage.textContent = "照片檔案需小於 10 MB。";
     teacherFormMessage.classList.add("error");
@@ -576,29 +640,41 @@ teacherForm.addEventListener("submit", async (event) => {
   payload.append("teacher", JSON.stringify(teacher));
   if (photo) payload.append("photo", photo, photo.name);
   teacherSubmitButton.disabled = true;
-  document.querySelector("#teacher-submit-label").textContent = "正在建立老師…";
+  document.querySelector("#teacher-submit-label").textContent = isEditing ? "正在儲存修改…" : "正在建立老師…";
   teacherFormMessage.classList.remove("error");
   teacherFormMessage.textContent = isRemoteAdmin
-    ? "正在儲存老師資料並發布至公開網站…"
-    : "正在以本機繁體中文語音產生 WAV，請稍候。";
+    ? isEditing
+      ? "正在更新老師資料並發布至公開網站…"
+      : "正在儲存老師資料並發布至公開網站…"
+    : isEditing
+      ? "正在儲存老師資料，語音稿變更時會重新產生 WAV。"
+      : "正在以本機繁體中文語音產生 WAV，請稍候。";
   teacherFormMessage.hidden = false;
 
   try {
-    const response = await apiRequest("/api/teachers", { method: "POST", body: payload });
+    const endpoint = isEditing
+      ? `/api/teachers/${encodeURIComponent(editingTeacherId)}`
+      : "/api/teachers";
+    const response = await apiRequest(endpoint, { method: isEditing ? "PUT" : "POST", body: payload });
     const result = await response.json();
-    if (!response.ok) throw new Error(result.error || `新增工藝老師失敗（${response.status}）`);
-    teacherFormMessage.textContent = result.message;
-    teacherFormMessage.classList.remove("error");
-    showSuccess(result);
-    resetTeacherForm();
+    if (!response.ok) throw new Error(result.error || `${isEditing ? "更新" : "新增"}工藝老師失敗（${response.status}）`);
+    if (isEditing) {
+      resetTeacherForm();
+      teacherFormMessage.textContent = result.message;
+      teacherFormMessage.hidden = false;
+    } else {
+      teacherFormMessage.textContent = result.message;
+      showSuccess(result);
+      resetTeacherForm();
+    }
     await loadTeachers();
   } catch (error) {
-    teacherFormMessage.textContent = error.message || "新增工藝老師失敗，請確認管理服務仍在執行。";
+    teacherFormMessage.textContent = error.message || "儲存工藝老師失敗，請確認管理服務仍在執行。";
     teacherFormMessage.classList.add("error");
     teacherFormMessage.hidden = false;
   } finally {
     teacherSubmitButton.disabled = false;
-    document.querySelector("#teacher-submit-label").textContent = "建立老師";
+    document.querySelector("#teacher-submit-label").textContent = editingTeacherId ? "儲存修改" : "建立老師";
   }
 });
 
