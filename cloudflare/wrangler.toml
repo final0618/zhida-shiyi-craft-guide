@@ -1,0 +1,19 @@
+name = "zhida-shiyi-admin-api"
+main = "src/index.js"
+compatibility_date = "2026-11-15"
+workers_dev = true
+
+[vars]
+GITHUB_OWNER = "final0618"
+GITHUB_REPO = "zhida-shiyi-craft-guide"
+GITHUB_BRANCH = "main"
+PUBLIC_BASE_URL = "https://final0618.github.io/zhida-shiyi-craft-guide/"
+ALLOWED_ORIGINS = "https://final0618.github.io,http://127.0.0.1:8000,http://localhost:8000"
+
+[[ratelimits]]
+name = "LOGIN_RATE_LIMITER"
+namespace_id = "2026111501"
+
+[ratelimits.simple]
+limit = 5
+period = 60

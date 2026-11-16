@@ -135,6 +135,23 @@ button { color: inherit; }
 .empty-state, .load-error { padding: 36px 0; text-align: center; color: var(--ink-soft); font-size: 13px; }
 .load-error { color: #9a4f3e; }
 
+.teacher-section { padding: 82px clamp(24px, 12.1vw, 188px) 94px; background: #f5f2ec; }
+.teacher-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 23px; margin-top: 37px; }
+.teacher-card { min-width: 0; background: #eeebe3; animation: card-in .45s both; }
+.teacher-card-link { display: block; height: 100%; color: inherit; text-decoration: none; }
+.teacher-card-portrait { overflow: hidden; aspect-ratio: 1.45 / 1; background: #e2e2d7; }
+.teacher-card-portrait img { display: block; width: 100%; height: 100%; object-fit: cover; transition: transform .55s cubic-bezier(.2,.7,.2,1); }
+.teacher-card-portrait > span { min-height: 190px; height: 100%; display: grid; place-items: center; color: var(--olive); font: 500 clamp(70px, 10vw, 120px)/1 var(--serif); }
+.teacher-card:hover .teacher-card-portrait img { transform: scale(1.045); }
+.teacher-card-content { padding: 19px 20px 17px; }
+.teacher-card-specialty { margin: 0 0 8px; color: var(--olive); font-size: 9px; letter-spacing: .12em; }
+.teacher-card-content h3 { margin: 0; font: 500 21px var(--serif); letter-spacing: .06em; }
+.teacher-card-description { margin: 13px 0 18px; color: #6c6d63; font: 11px/1.9 var(--serif); }
+.teacher-card-cta { display: flex; justify-content: space-between; align-items: center; border-top: 1px solid #dcd7cc; padding-top: 12px; color: var(--olive-dark); font-size: 9px; letter-spacing: .06em; }
+.teacher-card-cta span { color: var(--olive); font-size: 17px; transition: transform .2s; }
+.teacher-card:hover .teacher-card-cta span { transform: translate(3px, -3px); }
+.teacher-empty { padding: 34px 0 0; text-align: center; color: var(--ink-soft); font-size: 12px; }
+
 .about-section { min-height: 284px; padding: 58px clamp(24px, 12.1vw, 188px); display: grid; grid-template-columns: .6fr 1.3fr 1fr; align-items: center; gap: 34px; position: relative; background: #dfe1d5; overflow: hidden; }
 .about-mark { justify-self: center; width: 97px; height: 97px; display: grid; place-items: center; border: 1px solid rgba(86, 97, 67, .5); border-radius: 50%; color: var(--olive); font: 45px var(--serif); transform: rotate(-9deg); }
 .about-section .eyebrow { margin-bottom: 13px; }
@@ -155,6 +172,7 @@ button { color: inherit; }
 .detail-visual { position: sticky; top: 25px; }
 .detail-image-wrap { position: relative; background: #e7e1d5; overflow: hidden; }
 .detail-image { display: block; width: 100%; aspect-ratio: .88 / 1; object-fit: cover; }
+.teacher-portrait-placeholder { min-height: 340px; aspect-ratio: .88 / 1; display: grid; place-items: center; background: #e2e2d7; color: var(--olive); font: 500 clamp(90px, 16vw, 190px)/1 var(--serif); }
 .detail-number { position: absolute; top: 17px; left: 18px; color: rgba(42,43,38,.68); font-size: 10px; letter-spacing: .14em; }
 .detail-caption { display: flex; justify-content: space-between; color: #858275; font: 9px var(--sans); letter-spacing: .06em; padding: 12px 1px; }
 .detail-copy { padding-top: 10px; }
@@ -162,6 +180,12 @@ button { color: inherit; }
 .detail-copy h1 { margin: 0; font-size: clamp(35px, 4vw, 48px); letter-spacing: .08em; line-height: 1.4; }
 .detail-subtitle { color: #858274; font: 11px var(--sans); letter-spacing: .07em; margin: 12px 0 25px; }
 .detail-intro { max-width: 510px; color: #616258; font: 14px/2.1 var(--serif); padding-bottom: 24px; border-bottom: 1px solid var(--line); }
+.teacher-related-works { margin-top: 25px; }
+.teacher-related-works ul { margin: 0; padding: 0; list-style: none; border-top: 1px solid var(--line); }
+.teacher-related-works li { border-bottom: 1px solid var(--line); }
+.teacher-related-works a { display: flex; justify-content: space-between; gap: 12px; padding: 13px 2px; color: var(--olive-dark); font: 12px var(--serif); text-decoration: none; }
+.teacher-related-works a:hover { color: var(--clay); }
+.teacher-related-works a span { color: var(--olive); }
 .voice-panel { display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 12px 14px; padding: 17px 18px; margin: 21px 0 30px; background: #e8e8de; }
 .voice-copy { grid-column: 1 / -1; grid-row: 1; min-width: 0; }
 .voice-copy strong { display: block; font-size: 13px; font-weight: 600; }
@@ -200,10 +224,24 @@ button { color: inherit; }
 .detail-footer { max-width: 1120px; margin: 57px auto 0; padding-top: 17px; border-top: 1px solid var(--line); display: flex; justify-content: space-between; color: #8c8a7e; font-size: 9px; }
 
 .admin-body { min-height: 100vh; background: #eeebe3; }
+.admin-login { min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 30px; padding: 28px 20px; }
+.admin-login-card { width: min(100%, 410px); padding: 34px; border: 1px solid var(--line); background: var(--paper); }
+.admin-login-card .eyebrow { margin: 0 0 14px; }
+.admin-login-card h1 { margin: 0; color: var(--ink); font: 500 25px/1.5 var(--serif); letter-spacing: .05em; }
+.admin-login-card > p:not(.eyebrow):not(.admin-message) { margin: 8px 0 23px; color: var(--ink-soft); font: 11px/1.8 var(--serif); }
+.admin-login-card .admin-field { margin-bottom: 18px; }
+.admin-login-card .admin-submit { width: 100%; }
+.admin-login-card .admin-submit:disabled, .admin-logout:disabled { cursor: progress; opacity: .65; }
+.admin-login-card .admin-message { margin: 14px 0 0; }
+.admin-login-back { display: block; width: fit-content; margin-top: 18px; color: var(--ink-soft); font-size: 10px; }
+.admin-login-back:hover { color: var(--olive); }
 .admin-shell { max-width: 1120px; min-height: 100vh; margin: 0 auto; padding: 0 clamp(22px, 7vw, 90px) 30px; background: var(--paper); }
 .admin-header { height: 78px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--line); }
+.admin-header-actions { display: flex; align-items: center; gap: 16px; }
 .admin-back-link { color: var(--ink-soft); font-size: 10px; }
 .admin-back-link:hover { color: var(--olive); }
+.admin-logout { border: 1px solid #c9cbbd; padding: 8px 11px; background: transparent; color: var(--olive-dark); font-size: 9px; cursor: pointer; }
+.admin-logout:hover { background: #e8e8de; }
 .admin-intro { padding: 56px 0 42px; }
 .admin-intro .eyebrow { margin-bottom: 16px; }
 .admin-intro h1 { margin: 0; font: 500 clamp(35px, 5vw, 54px)/1.45 var(--serif); letter-spacing: .06em; }
@@ -292,6 +330,8 @@ button { color: inherit; }
   .hero-art { transform: scale(.88); transform-origin: center; }
   .collection-section, .about-section { padding-left: 8vw; padding-right: 8vw; }
   .craft-grid { gap: 15px; }
+  .teacher-section { padding-left: 8vw; padding-right: 8vw; }
+  .teacher-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 15px; }
   .card-body { padding: 15px; }
   .card-title { font-size: 16px; }
   .about-section { grid-template-columns: .5fr 1.3fr 1fr; gap: 22px; }
@@ -320,6 +360,9 @@ button { color: inherit; }
   .hero-caption { bottom: 8px; }
   .hero-bottom { left: 25px; right: 25px; bottom: 17px; font-size: 7px; }
   .collection-section { padding: 60px 21px 66px; }
+  .teacher-section { padding: 60px 21px 66px; }
+  .teacher-grid { grid-template-columns: 1fr; gap: 15px; margin-top: 25px; }
+  .teacher-card-portrait { aspect-ratio: 1.55 / 1; }
   .section-heading { align-items: start; flex-direction: column; gap: 11px; }
   .section-heading h2 { font-size: 30px; }
   .section-heading h2 span { font-size: 9px; margin-left: 6px; }
@@ -354,6 +397,7 @@ button { color: inherit; }
   .detail-footer { margin-top: 40px; }
   .admin-shell { padding-left: 20px; padding-right: 20px; }
   .admin-header { height: 68px; }
+  .admin-header-actions { gap: 10px; }
   .admin-intro { padding: 42px 0 30px; }
   .admin-intro h1 { font-size: 37px; }
   .admin-intro > p:not(.eyebrow) { font-size: 10px; }

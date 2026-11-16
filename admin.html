@@ -1,0 +1,228 @@
+<!doctype html>
+<html lang="zh-Hant">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#f5f2ec">
+    <meta name="craft-admin-api" content="https://zhida-shiyi-admin-api.final0618000001.workers.dev">
+    <title>作品管理｜知達拾藝</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Noto+Serif+TC:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="./styles.css?v=3">
+  </head>
+  <body class="admin-body">
+    <main class="admin-login" id="admin-login" aria-labelledby="admin-login-heading">
+      <a class="brand" href="./" aria-label="返回知達拾藝首頁">
+        <span class="brand-mark" aria-hidden="true">
+          <svg viewBox="0 0 40 40" fill="none"><path d="M20 4.5c2.8 7.3 8.2 12.7 15.5 15.5C28.2 22.8 22.8 28.2 20 35.5 17.2 28.2 11.8 22.8 4.5 20 11.8 17.2 17.2 11.8 20 4.5Z" fill="currentColor"/><circle cx="20" cy="20" r="3.2" fill="#F5F2EC"/></svg>
+        </span>
+        <span class="brand-name">知達拾藝 <span>CRAFT GUIDE</span></span>
+      </a>
+      <form class="admin-login-card" id="admin-login-form">
+        <p class="eyebrow"><span class="eyebrow-line"></span> CRAFT STUDIO</p>
+        <h1 id="admin-login-heading">管理後台登入</h1>
+        <p>請輸入管理密碼以繼續。</p>
+        <label class="admin-field" for="admin-password">
+          <span>管理密碼</span>
+          <input id="admin-password" name="password" type="password" autocomplete="current-password" required>
+        </label>
+        <button class="admin-submit" type="submit"><span>登入後台</span><span aria-hidden="true">↗</span></button>
+        <p class="admin-message error" id="admin-login-message" role="alert" hidden></p>
+        <a class="admin-login-back" href="./">← 返回導覽網站</a>
+      </form>
+    </main>
+
+    <main class="admin-shell" id="admin-shell" hidden>
+      <header class="admin-header">
+        <a class="brand" href="./" aria-label="返回知達拾藝首頁">
+          <span class="brand-mark" aria-hidden="true">
+            <svg viewBox="0 0 40 40" fill="none"><path d="M20 4.5c2.8 7.3 8.2 12.7 15.5 15.5C28.2 22.8 22.8 28.2 20 35.5 17.2 28.2 11.8 22.8 4.5 20 11.8 17.2 17.2 11.8 20 4.5Z" fill="currentColor"/><circle cx="20" cy="20" r="3.2" fill="#F5F2EC"/></svg>
+          </span>
+          <span class="brand-name">知達拾藝 <span>CRAFT GUIDE</span></span>
+        </a>
+        <div class="admin-header-actions">
+          <button class="admin-logout" id="admin-logout" type="button">登出</button>
+          <a class="admin-back-link" href="./">← 返回導覽網站</a>
+        </div>
+      </header>
+
+      <section class="admin-intro">
+        <p class="eyebrow"><span class="eyebrow-line"></span> CRAFT STUDIO</p>
+        <h1>新增一件工藝，<br><em>留下它的故事。</em></h1>
+        <p id="admin-intro-description">填入作品資訊與照片，系統會在這台電腦離線產生語音導覽，並為作品建立專屬 QR Code。</p>
+        <div class="admin-local-note"><span class="live-dot"></span><span id="server-status">本機管理模式・資料儲存在目前資料夾</span></div>
+      </section>
+
+      <section class="admin-existing" aria-labelledby="existing-heading">
+        <div class="admin-existing-heading">
+          <div><h2 id="existing-heading">已建立作品</h2><p>編輯作品資料，或重新產生專屬 QR Code。</p></div>
+          <button class="admin-refresh" id="refresh-artifacts" type="button">重新整理</button>
+        </div>
+        <div class="admin-artifact-list" id="admin-artifacts" aria-live="polite">正在載入作品…</div>
+      </section>
+
+      <form class="admin-form" id="artifact-form">
+        <div class="admin-edit-mode" id="edit-mode-notice" hidden>
+          <span>正在編輯：<strong id="edit-mode-title"></strong>（網址代碼固定）</span>
+          <button id="cancel-edit" type="button">取消編輯</button>
+        </div>
+        <section class="admin-form-section">
+          <div class="admin-section-heading">
+            <span class="admin-section-number">01</span>
+            <div><h2>作品基本資料</h2><p>掃描作品 QR Code 後，訪客會看到這些介紹。</p></div>
+          </div>
+          <div class="admin-fields">
+            <label class="admin-field">
+              <span>作品名稱 <i>*</i></span>
+              <input name="title" id="title" required maxlength="80" placeholder="例如：山稜茶器">
+            </label>
+            <label class="admin-field">
+              <span>網址代碼 <i>*</i></span>
+              <input name="id" id="artifact-id" required pattern="[a-z0-9]+(?:-[a-z0-9]+)*" maxlength="60" placeholder="例如：mountain-tea-ware">
+              <small>用於作品網址與 QR Code，只能使用小寫英文字母、數字和連字號。</small>
+            </label>
+            <label class="admin-field">
+              <span>作品分類 <i>*</i></span>
+              <input name="category" required maxlength="40" placeholder="例如：陶藝、木作、編織">
+            </label>
+            <label class="admin-field">
+              <span>作品副標 <i>*</i></span>
+              <input name="subtitle" required maxlength="100" placeholder="一句話介紹作品特色">
+            </label>
+            <label class="admin-field">
+              <span>創作者 <i>*</i></span>
+              <input name="maker" required maxlength="80" placeholder="創作者姓名或工坊">
+            </label>
+            <label class="admin-field">
+              <span>材質 <i>*</i></span>
+              <input name="material" required maxlength="100" placeholder="例如：台灣樟木、天然木蠟">
+            </label>
+            <label class="admin-field">
+              <span>工藝技法 <i>*</i></span>
+              <input name="technique" required maxlength="100" placeholder="例如：手工雕刻、打磨">
+            </label>
+            <label class="admin-field">
+              <span>作品年代 <i>*</i></span>
+              <input name="year" required maxlength="30" placeholder="例如：2025">
+            </label>
+            <label class="admin-field admin-field-wide">
+              <span>作品介紹 <i>*</i></span>
+              <textarea name="description" id="description" required maxlength="2000" rows="5" placeholder="描述作品的故事、特色與創作靈感。"></textarea>
+            </label>
+            <label class="admin-field admin-field-wide">
+              <span id="photo-label">作品照片 <i>*</i></span>
+              <input name="photo" id="photo" type="file" accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp" required>
+              <small id="photo-help">支援 JPG、PNG、WebP，檔案需小於 10 MB。</small>
+              <img class="photo-preview" id="photo-preview" alt="作品照片預覽" hidden>
+            </label>
+            <label class="admin-field admin-field-wide">
+              <span>照片替代文字 <i>*</i></span>
+              <input name="imageAlt" id="image-alt" required maxlength="160" placeholder="簡短描述照片，方便使用螢幕閱讀器的訪客">
+            </label>
+            <label class="admin-field admin-field-wide">
+              <span>作品短句 <i>*</i></span>
+              <input name="caption" required maxlength="100" placeholder="例如：木頭裡的山與風">
+            </label>
+          </div>
+        </section>
+
+        <section class="admin-form-section">
+          <div class="admin-section-heading">
+            <span class="admin-section-number">02</span>
+            <div><h2>語音導覽內容</h2><p id="voice-section-description">送出時會使用這台電腦的繁體中文語音離線產生 WAV 音檔。</p></div>
+          </div>
+          <label class="admin-field">
+            <span>語音稿 <i>*</i></span>
+            <textarea name="voiceText" id="voice-text" required maxlength="5000" rows="6" placeholder="輸入要播放的完整導覽內容。預設會依作品名稱與介紹自動帶入，可再編輯。"></textarea>
+            <small id="voice-text-help">最長 5,000 字。語音會儲存在專案的 assets/audio 資料夾。</small>
+          </label>
+        </section>
+
+        <section class="admin-form-section">
+          <div class="admin-section-heading">
+            <span class="admin-section-number">03</span>
+            <div><h2>工藝互動步驟</h2><p>訪客可點選步驟，逐段探索作品的製作過程。</p></div>
+          </div>
+          <div class="admin-steps" id="admin-steps"></div>
+          <button class="admin-add-step" id="add-step" type="button">＋ 新增步驟</button>
+        </section>
+
+        <div class="admin-submit-row">
+          <p id="submit-description">送出後會新增作品資料、上傳照片、產生語音檔及 QR Code。</p>
+          <button class="admin-submit" id="submit-button" type="submit"><span id="submit-label">建立作品</span><span aria-hidden="true">↗</span></button>
+        </div>
+        <div class="admin-message" id="form-message" role="status" hidden></div>
+      </form>
+
+      <section class="admin-existing" aria-labelledby="teachers-heading">
+        <div class="admin-existing-heading">
+          <div><h2 id="teachers-heading">已建立工藝老師</h2><p>查看老師 QR Code，訪客掃描後可閱讀介紹並播放語音。</p></div>
+          <button class="admin-refresh" id="refresh-teachers" type="button">重新整理</button>
+        </div>
+        <div class="admin-artifact-list" id="admin-teachers" aria-live="polite">正在載入工藝老師…</div>
+      </section>
+
+      <form class="admin-form" id="teacher-form">
+        <section class="admin-form-section">
+          <div class="admin-section-heading">
+            <span class="admin-section-number">01</span>
+            <div><h2>新增工藝老師</h2><p>每位老師會有獨立介紹頁與 QR Code；符合創作者姓名的作品會自動連結至老師介紹。</p></div>
+          </div>
+          <div class="admin-fields">
+            <label class="admin-field">
+              <span>老師姓名 <i>*</i></span>
+              <input name="name" id="teacher-name" required maxlength="80" placeholder="例如：林映陶">
+            </label>
+            <label class="admin-field">
+              <span>網址代碼 <i>*</i></span>
+              <input name="id" id="teacher-id" required pattern="[a-z0-9]+(?:-[a-z0-9]+)*" maxlength="60" placeholder="例如：yingtao-lin">
+              <small>用於老師介紹網址與 QR Code，只能使用小寫英文字母、數字和連字號。</small>
+            </label>
+            <label class="admin-field admin-field-wide">
+              <span>工藝專長 <i>*</i></span>
+              <input name="specialty" required maxlength="100" placeholder="例如：陶藝、柴燒">
+            </label>
+            <label class="admin-field admin-field-wide">
+              <span>老師介紹 <i>*</i></span>
+              <textarea name="description" id="teacher-description" required maxlength="2000" rows="5" placeholder="介紹老師的經歷、創作理念與工藝特色。"></textarea>
+            </label>
+            <label class="admin-field admin-field-wide">
+              <span>老師照片</span>
+              <input name="photo" id="teacher-photo" type="file" accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp">
+              <small>選填；支援 JPG、PNG、WebP，檔案需小於 10 MB。</small>
+              <img class="photo-preview" id="teacher-photo-preview" alt="工藝老師照片預覽" hidden>
+            </label>
+            <label class="admin-field admin-field-wide">
+              <span>照片替代文字</span>
+              <input name="imageAlt" id="teacher-image-alt" maxlength="160" placeholder="上傳照片時，簡短描述照片以方便螢幕閱讀器使用者">
+            </label>
+            <label class="admin-field admin-field-wide">
+              <span>語音介紹稿 <i>*</i></span>
+              <textarea name="voiceText" id="teacher-voice-text" required maxlength="5000" rows="6" placeholder="輸入要播放的完整老師介紹。"></textarea>
+              <small id="teacher-voice-help">最長 5,000 字。本機模式會產生 WAV；雲端管理會保存語音稿，由訪客裝置合成語音。</small>
+            </label>
+          </div>
+        </section>
+        <div class="admin-submit-row">
+          <p id="teacher-submit-description">送出後會新增老師資料、上傳照片、產生語音檔及專屬 QR Code。</p>
+          <button class="admin-submit" id="teacher-submit-button" type="submit"><span id="teacher-submit-label">建立老師</span><span aria-hidden="true">↗</span></button>
+        </div>
+        <div class="admin-message" id="teacher-form-message" role="status" hidden></div>
+      </form>
+
+      <section class="admin-success" id="admin-success" hidden aria-live="polite">
+        <span class="admin-success-mark">✓</span>
+        <div><p class="eyebrow">YOUR CRAFT IS READY</p><h2 id="success-title">作品已建立</h2><p id="success-detail"></p></div>
+        <div class="qr-result">
+          <img id="qr-image" alt="作品導覽 QR Code">
+          <div><strong id="qr-title">作品專屬 QR Code</strong><p id="qr-url"></p><a id="download-qr" download>下載 QR Code PNG</a><a id="open-artifact" target="_blank" rel="noopener">開啟作品導覽頁 ↗</a></div>
+        </div>
+        <button class="admin-another" id="add-another" type="button">＋ 繼續新增作品</button>
+      </section>
+
+      <footer class="admin-footer"><span>知達拾藝 Craft Guide</span><span id="admin-footer-note">本機資料請定期備份整個專案資料夾。</span></footer>
+    </main>
+    <script src="./admin.js" defer></script>
+  </body>
+</html>

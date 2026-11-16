@@ -9,7 +9,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Noto+Serif+TC:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="./styles.css?v=2">
+    <link rel="stylesheet" href="./styles.css?v=3">
   </head>
   <body>
     <div class="page-shell">
@@ -25,6 +25,7 @@
         </a>
         <nav class="header-nav" aria-label="主要導覽">
           <a href="#works">探索作品</a>
+          <a href="#teachers">工藝老師</a>
           <a href="#about">關於導覽</a>
           <a class="admin-nav-link" id="admin-nav-link" href="./admin" hidden>作品管理</a>
         </nav>
@@ -100,6 +101,18 @@
           <div class="load-error" id="load-error" role="alert" hidden>作品資料載入失敗，請確認使用本機伺服器開啟網站，並重新整理頁面。</div>
         </section>
 
+        <section class="teacher-section" id="teachers">
+          <div class="section-heading">
+            <div>
+              <p class="eyebrow"><span class="eyebrow-line"></span> MEET THE MAKERS</p>
+              <h2>工藝老師 <span>People behind the craft</span></h2>
+            </div>
+            <p class="collection-intro">認識每一雙巧手，<br>聽聽老師與工藝的故事。</p>
+          </div>
+          <div class="teacher-grid" id="teacher-grid" aria-live="polite"></div>
+          <p class="teacher-empty" id="teacher-empty" hidden>老師介紹即將推出，敬請期待。</p>
+        </section>
+
         <section class="about-section" id="about">
           <div class="about-mark" aria-hidden="true">拾</div>
           <div>
@@ -124,6 +137,6 @@
     </div>
 
     <section class="detail-screen" id="detail-screen" hidden aria-live="polite"></section>
-    <script src="./app.js?v=8" defer></script>
+    <script src="./app.js?v=10" defer></script>
   </body>
 </html>

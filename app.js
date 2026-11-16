@@ -1,4 +1,6 @@
 const grid = document.querySelector("#craft-grid");
+const teacherGrid = document.querySelector("#teacher-grid");
+const teacherEmpty = document.querySelector("#teacher-empty");
 const searchInput = document.querySelector("#search-input");
 const filterList = document.querySelector("#filter-list");
 const resultCount = document.querySelector("#result-count");
@@ -8,6 +10,7 @@ const detailScreen = document.querySelector("#detail-screen");
 const adminNavLink = document.querySelector("#admin-nav-link");
 
 let artifacts = [];
+let teachers = [];
 let selectedCategory = "全部作品";
 let activeUtterance = null;
 
@@ -23,13 +26,11 @@ const escapeHTML = (value) => String(value).replace(/[&<>"']/g, (character) => (
   "'": "&#39;",
 }[character]));
 
-const updateLocation = (artifactId) => {
+const updateLocation = (type, id) => {
   const url = new URL(window.location.href);
-  if (artifactId) {
-    url.searchParams.set("artifact", artifactId);
-  } else {
-    url.searchParams.delete("artifact");
-  }
+  url.searchParams.delete("artifact");
+  url.searchParams.delete("teacher");
+  if (id) url.searchParams.set(type, id);
   window.history.pushState({}, "", url);
   renderRoute();
   window.scrollTo({ top: 0, behavior: "smooth" });
@@ -80,7 +81,35 @@ const renderCards = () => {
   `).join("");
 };
 
+const renderTeacherCards = () => {
+  teacherEmpty.hidden = teachers.length !== 0;
+  teacherGrid.innerHTML = teachers.map((teacher) => `
+    <article class="teacher-card">
+      <a class="teacher-card-link" href="?teacher=${encodeURIComponent(teacher.id)}" data-teacher="${escapeHTML(teacher.id)}" aria-label="認識工藝老師：${escapeHTML(teacher.name)}">
+        <div class="teacher-card-portrait">
+          ${teacher.image
+            ? `<img src="${escapeHTML(teacher.image)}" alt="${escapeHTML(teacher.imageAlt || teacher.name)}" loading="lazy">`
+            : `<span role="img" aria-label="${escapeHTML(teacher.name)}老師介紹">${escapeHTML(teacher.name.slice(0, 1))}</span>`}
+        </div>
+        <div class="teacher-card-content">
+          <p class="teacher-card-specialty">${escapeHTML(teacher.specialty)}</p>
+          <h3>${escapeHTML(teacher.name)}</h3>
+          <p class="teacher-card-description">${escapeHTML(teacher.description)}</p>
+          <span class="teacher-card-cta">認識老師・聽介紹 <span aria-hidden="true">↗</span></span>
+        </div>
+      </a>
+    </article>
+  `).join("");
+};
+
 const getArtifactFromLocation = () => new URLSearchParams(window.location.search).get("artifact");
+const getTeacherFromLocation = () => new URLSearchParams(window.location.search).get("teacher");
+
+const makerMatchesTeacher = (maker, teacherName) => {
+  const normalize = (value) => String(value).normalize("NFC").trim().toLocaleLowerCase();
+  const names = String(maker).split(/[、,，;；|/]/).map(normalize);
+  return names.includes(normalize(teacherName));
+};
 
 const stopNarration = () => {
   const audioPlayer = detailScreen.querySelector(".detail-audio");
@@ -345,21 +374,206 @@ const renderDetail = (artifact) => {
   }
 };
 
+const renderTeacher = (teacher) => {
+  stopNarration();
+  const relatedArtifacts = artifacts.filter((artifact) => makerMatchesTeacher(artifact.maker, teacher.name));
+  const narration = teacher.audio
+    ? `
+      <div class="voice-panel voice-file-panel">
+        <div class="voice-copy"><strong>聽聽老師的介紹</strong><span>若未自動播放，請使用下方音訊控制列</span></div>
+        <audio class="detail-audio teacher-audio" controls autoplay preload="auto" aria-label="播放工藝老師語音介紹">
+          <source src="${escapeHTML(teacher.audio)}" type="audio/wav">
+          此瀏覽器不支援音訊播放。
+        </audio>
+      </div>
+    `
+    : `
+      <div class="voice-panel">
+        <button class="voice-button" type="button" aria-label="播放老師介紹" data-state="idle">
+          <svg class="icon-play" viewBox="0 0 20 20" aria-hidden="true"><path d="M6 3.8c0-.8.9-1.3 1.6-.8l8.1 5.5c.6.4.6 1.4 0 1.8l-8.1 5.5c-.7.5-1.6 0-1.6-.8V3.8Z"/></svg>
+          <svg class="icon-pause" viewBox="0 0 20 20" aria-hidden="true"><path d="M5 4h3.5v12H5zM11.5 4H15v12h-3.5z"/></svg>
+          <span class="voice-button-label">播放老師介紹</span>
+        </button>
+        <button class="voice-stop-button" type="button" aria-label="停止老師介紹" disabled>
+          <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M5 5h10v10H5z"/></svg>
+        </button>
+        <div class="voice-copy"><strong>聽聽老師的介紹</strong><span>頁面開啟時會嘗試自動播放</span></div>
+        <span class="voice-duration">繁體中文語音</span>
+      </div>
+    `;
+
+  detailScreen.innerHTML = `
+    <header class="detail-header">
+      <button class="back-button" type="button" data-back><span aria-hidden="true">←</span>返回導覽首頁</button>
+      <a class="detail-brand" href="./">知達拾藝 CRAFT GUIDE</a>
+    </header>
+    <div class="detail-layout">
+      <div class="detail-visual">
+        <div class="detail-image-wrap">
+          ${teacher.image
+            ? `<img class="detail-image" src="${escapeHTML(teacher.image)}" alt="${escapeHTML(teacher.imageAlt || teacher.name)}">`
+            : `<div class="teacher-portrait-placeholder" role="img" aria-label="${escapeHTML(teacher.name)}老師介紹">${escapeHTML(teacher.name.slice(0, 1))}</div>`}
+          <span class="detail-number">工藝老師</span>
+        </div>
+        <div class="detail-caption"><span>${escapeHTML(teacher.specialty)}</span><span>知達拾藝 Craft Guide</span></div>
+      </div>
+      <article class="detail-copy">
+        <p class="eyebrow"><span class="eyebrow-line"></span> 工藝老師 / ${escapeHTML(teacher.specialty)}</p>
+        <h1>${escapeHTML(teacher.name)}</h1>
+        ${narration}
+        <p class="detail-intro">${escapeHTML(teacher.description)}</p>
+        ${relatedArtifacts.length ? `
+          <section class="teacher-related-works" aria-labelledby="teacher-works-heading">
+            <div class="story-heading"><h2 id="teacher-works-heading">相關作品</h2><span>認識老師的工藝作品</span></div>
+            <ul>${relatedArtifacts.map((artifact) => `
+              <li><a href="?artifact=${encodeURIComponent(artifact.id)}">${escapeHTML(artifact.title)}<span aria-hidden="true">↗</span></a></li>
+            `).join("")}</ul>
+          </section>
+        ` : ""}
+      </article>
+    </div>
+    <footer class="detail-footer"><span>知達拾藝 Craft Guide</span><span>一位老師，一段工藝故事。</span></footer>
+  `;
+  detailScreen.hidden = false;
+  document.querySelector(".page-shell").hidden = true;
+  detailScreen.querySelector("[data-back]").addEventListener("click", () => updateLocation(null, null));
+
+  const audioPlayer = detailScreen.querySelector(".teacher-audio");
+  if (audioPlayer) {
+    const audioStatus = detailScreen.querySelector(".voice-copy span");
+    audioPlayer.addEventListener("playing", () => {
+      audioStatus.textContent = "正在播放老師介紹";
+    });
+    audioPlayer.addEventListener("ended", () => {
+      audioStatus.textContent = "老師介紹已播放完畢";
+    });
+    audioPlayer.addEventListener("error", () => {
+      audioStatus.textContent = "音訊播放失敗，請使用音訊控制列重試";
+      console.error("工藝老師語音檔播放失敗", audioPlayer.error);
+    });
+    const showAudioError = (error) => {
+      audioStatus.textContent = error.name === "NotAllowedError"
+        ? "瀏覽器封鎖自動播放，請使用下方音訊控制列"
+        : "音訊播放失敗，請使用音訊控制列重試";
+      if (error.name !== "NotAllowedError") console.error("工藝老師語音檔播放失敗", error);
+    };
+    try {
+      const playback = audioPlayer.play();
+      if (playback) playback.catch(showAudioError);
+    } catch (error) {
+      showAudioError(error);
+    }
+    return;
+  }
+
+  const voiceButton = detailScreen.querySelector(".voice-button");
+  const stopButton = detailScreen.querySelector(".voice-stop-button");
+  const voiceStatus = detailScreen.querySelector(".voice-copy span");
+  const setVoiceButton = (state, label, ariaLabel) => {
+    voiceButton.dataset.state = state;
+    voiceButton.setAttribute("aria-label", ariaLabel);
+    voiceButton.querySelector(".voice-button-label").textContent = label;
+  };
+  const resetVoiceControls = () => {
+    setVoiceButton("idle", "播放老師介紹", "播放老師介紹");
+    stopButton.disabled = true;
+    voiceStatus.textContent = "語音導覽 · 繁體中文";
+  };
+  const playTeacherVoice = () => {
+    if (!("speechSynthesis" in window) || !("SpeechSynthesisUtterance" in window)) {
+      voiceButton.disabled = true;
+      voiceStatus.textContent = "此瀏覽器不支援語音播放";
+      return;
+    }
+    if (window.speechSynthesis.paused) {
+      window.speechSynthesis.resume();
+      setVoiceButton("playing", "暫停老師介紹", "暫停老師介紹");
+      voiceStatus.textContent = "正在播放 · 點擊暫停";
+      return;
+    }
+    if (window.speechSynthesis.speaking || window.speechSynthesis.pending) {
+      window.speechSynthesis.pause();
+      setVoiceButton("paused", "繼續播放老師介紹", "繼續老師介紹");
+      voiceStatus.textContent = "已暫停 · 點擊繼續";
+      return;
+    }
+
+    const utterance = new SpeechSynthesisUtterance(teacher.voiceText);
+    activeUtterance = utterance;
+    utterance.lang = "zh-TW";
+    utterance.rate = 0.9;
+    utterance.onstart = () => {
+      if (activeUtterance !== utterance) return;
+      setVoiceButton("playing", "暫停老師介紹", "暫停老師介紹");
+      stopButton.disabled = false;
+      voiceStatus.textContent = "正在播放 · 點擊暫停";
+    };
+    utterance.onend = () => {
+      if (activeUtterance !== utterance) return;
+      activeUtterance = null;
+      resetVoiceControls();
+    };
+    utterance.onerror = (error) => {
+      if (activeUtterance !== utterance) return;
+      activeUtterance = null;
+      resetVoiceControls();
+      voiceStatus.textContent = error.error === "not-allowed"
+        ? "瀏覽器封鎖自動播放，請點擊播放按鈕"
+        : "語音播放失敗，請點擊播放按鈕重試";
+      if (error.error !== "not-allowed") console.error("工藝老師語音播放失敗", error);
+    };
+    voiceStatus.textContent = "若未聽到語音，請點擊播放按鈕";
+    try {
+      window.speechSynthesis.speak(utterance);
+    } catch (error) {
+      activeUtterance = null;
+      resetVoiceControls();
+      voiceStatus.textContent = "語音播放失敗，請點擊播放按鈕重試";
+      console.error("工藝老師語音無法啟動", error);
+    }
+  };
+  voiceButton.addEventListener("click", playTeacherVoice);
+  stopButton.addEventListener("click", () => {
+    stopNarration();
+    resetVoiceControls();
+  });
+  playTeacherVoice();
+};
+
 const renderRoute = () => {
   const artifactId = getArtifactFromLocation();
+  const teacherId = getTeacherFromLocation();
   const artifact = artifacts.find((item) => item.id === artifactId);
   const pageShell = document.querySelector(".page-shell");
 
+  if (artifactId && teacherId) {
+    stopNarration();
+    detailScreen.hidden = true;
+    pageShell.hidden = false;
+    emptyState.textContent = "網址不可同時指定作品與工藝老師，請確認 QR Code。";
+    emptyState.hidden = false;
+    grid.hidden = true;
+    return;
+  }
   if (artifact) {
     renderDetail(artifact);
     return;
+  }
+  if (teacherId) {
+    const teacher = teachers.find((item) => item.id === teacherId);
+    if (teacher) {
+      renderTeacher(teacher);
+      return;
+    }
   }
 
   stopNarration();
   detailScreen.hidden = true;
   pageShell.hidden = false;
-  if (artifactId) {
-    emptyState.textContent = "找不到這件作品，請確認 QR Code 或網址是否正確。";
+  if (artifactId || teacherId) {
+    emptyState.textContent = artifactId
+      ? "找不到這件作品，請確認 QR Code 或網址是否正確。"
+      : "找不到這位工藝老師，請確認 QR Code 或網址是否正確。";
     emptyState.hidden = false;
     grid.hidden = true;
   } else {
@@ -383,22 +597,37 @@ grid.addEventListener("click", (event) => {
   const link = event.target.closest("[data-artifact]");
   if (!link) return;
   event.preventDefault();
-  updateLocation(link.dataset.artifact);
+  updateLocation("artifact", link.dataset.artifact);
+});
+
+teacherGrid.addEventListener("click", (event) => {
+  const link = event.target.closest("[data-teacher]");
+  if (!link) return;
+  event.preventDefault();
+  updateLocation("teacher", link.dataset.teacher);
 });
 
 window.addEventListener("popstate", renderRoute);
 
-fetch("./data/artifacts.json")
-  .then((response) => {
-    if (!response.ok) throw new Error(`無法載入作品資料：HTTP ${response.status}`);
-    return response.json();
+Promise.all([fetch("./data/artifacts.json"), fetch("./data/teachers.json")])
+  .then(async ([artifactResponse, teacherResponse]) => {
+    if (!artifactResponse.ok) throw new Error(`無法載入作品資料：HTTP ${artifactResponse.status}`);
+    if (!teacherResponse.ok) throw new Error(`無法載入工藝老師資料：HTTP ${teacherResponse.status}`);
+    return Promise.all([artifactResponse.json(), teacherResponse.json()]);
   })
-  .then((data) => {
-    if (!Array.isArray(data) || data.some((artifact) => !artifact.id || !artifact.title || !Array.isArray(artifact.steps) || artifact.steps.length === 0)) {
+  .then(([artifactData, teacherData]) => {
+    if (!Array.isArray(artifactData) || artifactData.some((artifact) => !artifact.id || !artifact.title || !Array.isArray(artifact.steps) || artifact.steps.length === 0)) {
       throw new Error("作品資料格式不正確");
     }
-    artifacts = data;
+    if (!Array.isArray(teacherData) || teacherData.some((teacher) => (
+      !teacher.id || !teacher.name || !teacher.specialty || !teacher.description || !teacher.voiceText
+    ))) {
+      throw new Error("工藝老師資料格式不正確");
+    }
+    artifacts = artifactData;
+    teachers = teacherData;
     renderFilters();
+    renderTeacherCards();
     renderRoute();
   })
   .catch((error) => {
