@@ -127,6 +127,17 @@ const renderDetail = (artifact) => {
       ${String(index + 1).padStart(2, "0")} ${escapeHTML(step.tab)}
     </button>
   `).join("");
+  const guideCompanion = `
+    <div class="guide-companion" data-state="idle">
+      <div class="guide-companion-portrait">
+        <img class="guide-companion-image" src="./assets/zhida-guide-character.png" alt="知達小匠導覽員的臉部特寫" data-idle-src="./assets/zhida-guide-character.png" data-speak-src="./assets/mouth-talking.gif?v=2">
+      </div>
+      <div class="guide-companion-bubble">
+        <strong>知達小匠</strong>
+        <span data-guide-message>你好！我來陪你認識這件作品。</span>
+      </div>
+    </div>
+  `;
 
   detailScreen.innerHTML = `
     <header class="detail-header">
@@ -145,6 +156,7 @@ const renderDetail = (artifact) => {
         <p class="eyebrow"><span class="eyebrow-line"></span> ${escapeHTML(artifact.category)} / ${escapeHTML(artifact.maker)}</p>
         <h1>${escapeHTML(artifact.title)}</h1>
         <p class="detail-subtitle">${escapeHTML(artifact.subtitle)}</p>
+        ${guideCompanion}
         ${artifact.audio ? `
         <div class="voice-panel voice-file-panel">
           <div class="voice-copy"><strong>聽一段作品故事</strong><span>頁面開啟時會嘗試自動播放</span></div>
@@ -187,6 +199,18 @@ const renderDetail = (artifact) => {
   detailScreen.hidden = false;
   document.querySelector(".page-shell").hidden = true;
 
+  const setGuideStatus = (state, message) => {
+    const companion = detailScreen.querySelector(".guide-companion");
+    companion.dataset.state = state;
+    companion.querySelector("[data-guide-message]").textContent = message;
+
+    const img = companion.querySelector(".guide-companion-image");
+    if (state === "speaking") {
+      img.src = img.dataset.speakSrc;
+    } else {
+      img.src = img.dataset.idleSrc;
+    }
+  };
   const stepPanel = detailScreen.querySelector(".step-panel");
   const showStep = (index) => {
     const step = artifact.steps[index];
@@ -222,9 +246,11 @@ const renderDetail = (artifact) => {
         : "重新播放語音介紹";
       if (error.name === "NotAllowedError") {
         audioStatus.textContent = "瀏覽器封鎖自動播放，請點擊下方按鈕";
+        setGuideStatus("idle", "點一下播放按鈕，我就能開始介紹作品。");
         return;
       }
       audioStatus.textContent = "音訊播放失敗，請點擊下方按鈕重試";
+      setGuideStatus("idle", "語音暫時無法播放，請再試一次。");
       console.error("語音檔播放失敗", error);
     };
 
@@ -235,6 +261,7 @@ const renderDetail = (artifact) => {
       audioButton.setAttribute("aria-label", "暫停語音導覽");
       audioButton.querySelector("span").textContent = "暫停語音介紹";
       audioStatus.textContent = "正在播放語音導覽";
+      setGuideStatus("speaking", "作品故事開始了，請跟我一起聽。");
     });
     audioPlayer.addEventListener("pause", () => {
       if (playbackStarted && !playbackFailed && !audioPlayer.ended) {
@@ -242,6 +269,7 @@ const renderDetail = (artifact) => {
         audioButton.setAttribute("aria-label", "繼續語音導覽");
         audioButton.querySelector("span").textContent = "繼續播放語音介紹";
         audioStatus.textContent = "已暫停 · 點擊播放按鈕繼續";
+        setGuideStatus("paused", "先休息一下，準備好再繼續聽。");
       }
     });
     audioPlayer.addEventListener("ended", () => {
@@ -249,6 +277,7 @@ const renderDetail = (artifact) => {
       audioButton.setAttribute("aria-label", "重新播放語音導覽");
       audioButton.querySelector("span").textContent = "重新播放語音介紹";
       audioStatus.textContent = "語音導覽已播放完畢";
+      setGuideStatus("idle", "介紹到這裡，一起看看作品的工藝細節吧！");
     });
     audioPlayer.addEventListener("error", () => {
       showAudioError(audioPlayer.error || new Error("音訊檔載入失敗"));
@@ -286,10 +315,11 @@ const renderDetail = (artifact) => {
       voiceButton.setAttribute("aria-label", ariaLabel);
       voiceButton.querySelector(".voice-button-label").textContent = label;
     };
-    const resetVoiceControls = () => {
+    const resetVoiceControls = (guideMessage = "準備好後，點擊播放聽聽完整介紹。") => {
       setVoiceButton("idle", "播放語音介紹", "播放語音導覽");
       stopButton.disabled = true;
       voiceStatus.textContent = "語音導覽 · 繁體中文";
+      setGuideStatus("idle", guideMessage);
     };
 
     voiceButton.addEventListener("click", () => {
@@ -312,6 +342,7 @@ const renderDetail = (artifact) => {
         window.speechSynthesis.resume();
         setVoiceButton("playing", "暫停語音介紹", "暫停語音導覽");
         voiceStatus.textContent = "正在播放 · 點擊暫停";
+        setGuideStatus("speaking", "我們繼續聽作品故事！");
         return;
       }
 
@@ -319,6 +350,7 @@ const renderDetail = (artifact) => {
         window.speechSynthesis.pause();
         setVoiceButton("paused", "繼續播放語音介紹", "繼續語音導覽");
         voiceStatus.textContent = "已暫停 · 點擊繼續";
+        setGuideStatus("paused", "先休息一下，準備好再繼續聽。");
         return;
       }
 
@@ -333,12 +365,13 @@ const renderDetail = (artifact) => {
         setVoiceButton("playing", "暫停語音介紹", "暫停語音導覽");
         stopButton.disabled = false;
         voiceStatus.textContent = "正在播放 · 點擊暫停";
+        setGuideStatus("speaking", "作品故事開始了，請跟我一起聽。");
       };
       activeUtterance.onend = () => {
         if (activeUtterance !== utterance) return;
         autoplayAttemptPending = false;
         activeUtterance = null;
-        resetVoiceControls();
+        resetVoiceControls("介紹到這裡，一起看看作品的工藝細節吧！");
       };
       activeUtterance.onerror = (error) => {
         if (activeUtterance !== utterance) return;
@@ -348,6 +381,7 @@ const renderDetail = (artifact) => {
         voiceStatus.textContent = error.error === "not-allowed"
           ? "瀏覽器封鎖自動播放，請點擊播放按鈕"
           : "自動播放未成功，請點擊播放按鈕重試";
+        setGuideStatus("idle", "點一下播放按鈕，我就能開始介紹作品。");
         console.error("語音導覽播放失敗", error);
       };
       setVoiceButton("idle", "播放語音介紹", "播放語音導覽");
@@ -360,6 +394,7 @@ const renderDetail = (artifact) => {
         activeUtterance = null;
         resetVoiceControls();
         voiceStatus.textContent = "自動播放未成功，請點擊播放按鈕重試";
+        setGuideStatus("idle", "語音暫時無法播放，請再試一次。");
         console.error("語音導覽無法啟動", error);
       }
     });

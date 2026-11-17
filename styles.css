@@ -179,6 +179,10 @@ button { color: inherit; }
 .detail-copy .eyebrow { margin-bottom: 15px; }
 .detail-copy h1 { margin: 0; font-size: clamp(35px, 4vw, 48px); letter-spacing: .08em; line-height: 1.4; }
 .detail-subtitle { color: #858274; font: 11px var(--sans); letter-spacing: .07em; margin: 12px 0 25px; }
+.guide-companion { display: flex; align-items: center; gap: 14px; margin: -7px 0 16px; }
+.guide-companion-portrait { position: relative; flex: 0 0 112px; width: 112px; height: 112px; overflow: hidden; border: 2px solid #e85a0c; border-radius: 20px; background: #fffaf0; }
+.guide-companion-image { position: relative; z-index: 0; display: block; width: 100%; height: 100%; object-fit: contain; }
+.guide-companion[data-state="paused"] .guide-companion-portrait { opacity: .78; }
 .detail-intro { max-width: 510px; color: #616258; font: 14px/2.1 var(--serif); padding-bottom: 24px; border-bottom: 1px solid var(--line); }
 .teacher-related-works { margin-top: 25px; }
 .teacher-related-works ul { margin: 0; padding: 0; list-style: none; border-top: 1px solid var(--line); }
@@ -320,6 +324,9 @@ button { color: inherit; }
 @keyframes card-in { from { opacity: 0; transform: translateY(9px); } to { opacity: 1; transform: translateY(0); } }
 @keyframes detail-in { from { opacity: 0; } to { opacity: 1; } }
 @keyframes step-in { from { opacity: .2; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes guide-speaking { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-3px); } }
+@keyframes guide-mouth-speaking { 0%, 100% { opacity: 0; } 45%, 70% { opacity: 1; } }
+@keyframes guide-mouth-open { 0%, 100% { transform: translate(-50%, -50%) scaleY(.35); } 50% { transform: translate(-50%, -50%) scaleY(1.5); } }
 
 @media (min-width: 1500px) {
   .hero { padding-left: 200px; padding-right: 200px; }
@@ -393,6 +400,10 @@ button { color: inherit; }
   .detail-copy { padding-top: 1px; width: 100%; }
   .detail-copy h1 { font-size: 36px; }
   .detail-intro { font-size: 12px; }
+  .guide-companion { gap: 10px; }
+  .guide-companion-portrait { flex-basis: 92px; width: 92px; height: 92px; }
+  .guide-companion-bubble { padding: 12px; }
+  .guide-companion-bubble span { font-size: 10px; }
   .voice-panel { margin: 17px 0 25px; padding: 14px; }
   .detail-footer { margin-top: 40px; }
   .admin-shell { padding-left: 20px; padding-right: 20px; }
