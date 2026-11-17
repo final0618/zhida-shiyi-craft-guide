@@ -166,6 +166,9 @@ button { color: inherit; }
 .guide-page-copy > p:not(.eyebrow) { color: var(--ink-soft); font: 13px/2.1 var(--serif); }
 .guide-page-copy > p.guide-page-lead { margin: 0 0 20px; color: var(--olive-dark); font-size: 16px; }
 .guide-page-copy .text-link { margin-top: 14px; }
+.guide-page-video { max-width: 1050px; margin: clamp(54px, 8vw, 100px) auto 0; text-align: center; }
+.guide-page-video h2 { margin: 0; font: 500 clamp(26px, 3vw, 36px) var(--serif); letter-spacing: .06em; }
+.guide-page-video video { display: block; width: 100%; max-height: 72svh; margin: 26px auto 0; border-radius: 2px; background: #25251f; object-fit: contain; }
 
 .about-section { min-height: 284px; padding: 58px clamp(24px, 12.1vw, 188px); display: grid; grid-template-columns: .6fr 1.3fr 1fr; align-items: center; gap: 34px; position: relative; background: #dfe1d5; overflow: hidden; }
 .about-mark { justify-self: center; width: 97px; height: 97px; display: grid; place-items: center; border: 1px solid rgba(86, 97, 67, .5); border-radius: 50%; color: var(--olive); font: 45px var(--serif); transform: rotate(-9deg); }
