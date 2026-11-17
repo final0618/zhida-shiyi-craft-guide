@@ -9,7 +9,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Noto+Serif+TC:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="./styles.css?v=6">
+    <link rel="stylesheet" href="./styles.css?v=7">
   </head>
   <body>
     <div class="page-shell">
@@ -26,6 +26,7 @@
         <nav class="header-nav" aria-label="主要導覽">
           <a href="#works">探索作品</a>
           <a href="#teachers">工藝老師</a>
+          <a href="./guide.html">知達小匠</a>
           <a href="#about">關於導覽</a>
           <a class="admin-nav-link" id="admin-nav-link" href="./admin" hidden>作品管理</a>
         </nav>
@@ -113,6 +114,16 @@
           <p class="teacher-empty" id="teacher-empty" hidden>老師介紹即將推出，敬請期待。</p>
         </section>
 
+        <section class="guide-intro" aria-labelledby="guide-intro-title">
+          <img src="./assets/zhida-guide-character.png" alt="知達小匠" loading="lazy">
+          <div>
+            <p class="eyebrow"><span class="eyebrow-line"></span> MEET YOUR GUIDE</p>
+            <h2 id="guide-intro-title">認識知達小匠</h2>
+            <p>讓知達小匠陪你一起聽故事，發現工藝作品裡的細節與心意。</p>
+            <a class="text-link" href="./guide.html">認識小匠 <span aria-hidden="true">↗</span></a>
+          </div>
+        </section>
+
         <section class="about-section" id="about">
           <div class="about-mark" aria-hidden="true">拾</div>
           <div>
@@ -137,6 +148,6 @@
     </div>
 
     <section class="detail-screen" id="detail-screen" hidden aria-live="polite"></section>
-    <script src="./app.js?v=14" defer></script>
+    <script src="./app.js?v=15" defer></script>
   </body>
 </html>

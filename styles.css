@@ -152,6 +152,21 @@ button { color: inherit; }
 .teacher-card:hover .teacher-card-cta span { transform: translate(3px, -3px); }
 .teacher-empty { padding: 34px 0 0; text-align: center; color: var(--ink-soft); font-size: 12px; }
 
+.guide-intro { display: flex; align-items: center; justify-content: center; gap: clamp(30px, 6vw, 90px); padding: 60px clamp(24px, 12.1vw, 188px); background: #eeebe3; }
+.guide-intro img { display: block; width: min(185px, 38%); border-radius: 50%; }
+.guide-intro h2 { margin: 0; font: 500 clamp(26px, 3vw, 36px) var(--serif); letter-spacing: .06em; }
+.guide-intro p:not(.eyebrow) { max-width: 400px; margin: 14px 0 20px; color: var(--ink-soft); font: 12px/2 var(--serif); }
+.guide-page { max-width: 1360px; min-height: 100svh; margin: 0 auto; padding: 0 clamp(22px, 8vw, 120px) 40px; }
+.guide-page-content { max-width: 1050px; margin: 75px auto 0; display: grid; grid-template-columns: minmax(0, .9fr) minmax(0, 1fr); align-items: center; gap: clamp(40px, 8vw, 110px); }
+.guide-page-portrait { padding: clamp(24px, 4vw, 50px); background: #e4e6d9; text-align: center; }
+.guide-page-portrait img { display: block; width: 100%; max-width: 340px; height: auto; margin: 0 auto; }
+.guide-page-portrait span { display: block; margin-top: 24px; color: var(--olive); font-size: 9px; letter-spacing: .18em; }
+.guide-page-copy h1 { margin: 0 0 20px; font: 500 clamp(36px, 4vw, 54px)/1.45 var(--serif); letter-spacing: .08em; }
+.guide-page-copy h1 em { color: var(--clay); font-style: normal; }
+.guide-page-copy > p:not(.eyebrow) { color: var(--ink-soft); font: 13px/2.1 var(--serif); }
+.guide-page-copy > p.guide-page-lead { margin: 0 0 20px; color: var(--olive-dark); font-size: 16px; }
+.guide-page-copy .text-link { margin-top: 14px; }
+
 .about-section { min-height: 284px; padding: 58px clamp(24px, 12.1vw, 188px); display: grid; grid-template-columns: .6fr 1.3fr 1fr; align-items: center; gap: 34px; position: relative; background: #dfe1d5; overflow: hidden; }
 .about-mark { justify-self: center; width: 97px; height: 97px; display: grid; place-items: center; border: 1px solid rgba(86, 97, 67, .5); border-radius: 50%; color: var(--olive); font: 45px var(--serif); transform: rotate(-9deg); }
 .about-section .eyebrow { margin-bottom: 13px; }
@@ -333,6 +348,7 @@ button { color: inherit; }
 }
 
 @media (max-width: 900px) {
+  .header-nav { gap: 18px; margin-left: 15px; }
   .hero { grid-template-columns: minmax(300px, .95fr) minmax(300px, 1fr); padding-left: 8vw; padding-right: 7vw; }
   .hero-art { transform: scale(.88); transform-origin: center; }
   .collection-section, .about-section { padding-left: 8vw; padding-right: 8vw; }
@@ -370,6 +386,15 @@ button { color: inherit; }
   .teacher-section { padding: 60px 21px 66px; }
   .teacher-grid { grid-template-columns: 1fr; gap: 15px; margin-top: 25px; }
   .teacher-card-portrait { aspect-ratio: 1.55 / 1; }
+  .guide-intro { padding: 42px 25px; gap: 22px; }
+  .guide-intro img { width: 110px; }
+  .guide-intro .eyebrow { margin-bottom: 10px; }
+  .guide-intro h2 { font-size: 23px; }
+  .guide-intro p:not(.eyebrow) { font-size: 11px; }
+  .guide-page-content { margin-top: 30px; grid-template-columns: 1fr; gap: 30px; }
+  .guide-page-portrait { padding: 25px; }
+  .guide-page-portrait img { max-width: 230px; }
+  .guide-page-copy h1 { font-size: 36px; }
   .section-heading { align-items: start; flex-direction: column; gap: 11px; }
   .section-heading h2 { font-size: 30px; }
   .section-heading h2 span { font-size: 9px; margin-left: 6px; }

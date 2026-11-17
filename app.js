@@ -129,9 +129,9 @@ const renderDetail = (artifact) => {
   `).join("");
   const guideCompanion = `
     <div class="guide-companion" data-state="idle">
-      <div class="guide-companion-portrait">
+      <a class="guide-companion-portrait" href="./guide.html" aria-label="認識知達小匠">
         <img class="guide-companion-image" src="./assets/zhida-guide-character.png" alt="知達小匠導覽員的臉部特寫" data-idle-src="./assets/zhida-guide-character.png" data-speak-src="./assets/mouth-talking.gif?v=2">
-      </div>
+      </a>
       <div class="guide-companion-bubble">
         <strong>知達小匠</strong>
         <span data-guide-message>你好！我來陪你認識這件作品。</span>
